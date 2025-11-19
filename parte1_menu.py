@@ -1,137 +1,265 @@
-def exibir_menu():
-    print("\n=== PATHFINDER - RESOLVEDOR DE LABIRINTOS ===")
-    print("1. Usar Labirinto Exemplo 1")
-    print("2. Usar Labirinto Exemplo 2") 
-    print("3. Usar Labirinto Exemplo 3")
-    print("4. Criar Meu Próprio Labirinto")
-    print("5. Sair")
+import random
+
+def exibir_menu_principal():
+    print("\n=== FLOOD FILL - COLORAÇÃO DE REGIÕES ===")
+    print("1. Usar Grid Exemplo 1")
+    print("2. Usar Grid Exemplo 2") 
+    print("3. Usar Grid Exemplo 3")
+    print("4. Criar Meu Próprio Grid")
+    print("5. Gerar Grid Aleatório")
+    print("6. Sair")
+    return input("Escolha uma opção (1-6): ")
+
+def exibir_menu_floodfill():
+    print("\n=== OPÇÕES FLOOD FILL ===")
+    print("1. Preencher região a partir de coordenadas específicas")
+    print("2. Preencher automaticamente todas as regiões")
+    print("3. Voltar ao menu principal")
+    return input("Escolha uma opção (1-3): ")
+
+def exibir_menu_geracao_automatica():
+    print("\n=== GERAR GRID ALEATÓRIO ===")
+    print("1. Grid Pequeno (5x5)")
+    print("2. Grid Médio (8x8)")
+    print("3. Grid Grande (12x12)")
+    print("4. Grid Personalizado (definir dimensões)")
+    print("5. Voltar")
     return input("Escolha uma opção (1-5): ")
 
-def carregar_labirinto_exemplo(numero):
+def exibir_menu_probabilidade():
+    print("\n=== PROBABILIDADE DE OBSTÁCULOS ===")
+    print("1. Baixa (20% obstáculos) - Muitas áreas livres")
+    print("2. Média (35% obstáculos) - Balanceado")
+    print("3. Alta (50% obstáculos) - Muitos obstáculos")
+    print("4. Personalizada (definir porcentagem)")
+    print("5. Voltar")
+    return input("Escolha uma opção (1-5): ")
+
+def carregar_grid_exemplo(numero):
     exemplos = {
         1: [
-            ['S', '0', '1', '0', '0'],
-            ['0', '0', '1', '0', '1'],
-            ['1', '0', '1', '0', '0'],
-            ['1', '0', '0', 'E', '1']
+            ['0', '0', '1', '0', '0'],
+            ['0', '1', '1', '0', '0'],
+            ['0', '0', '1', '1', '1'],
+            ['1', '1', '0', '0', '0']
         ],
         2: [
-            ['S', '0', '0', '0', '1'],
-            ['1', '0', '1', '0', '0'],
-            ['0', '0', '1', '1', '0'],
-            ['0', '1', '0', 'E', '0']
+            ['0', '1', '0', '0', '1'],
+            ['0', '1', '0', '0', '1'],
+            ['0', '1', '1', '1', '1'],
+            ['0', '0', '0', '1', '0']
         ],
         3: [
-            ['0', 'S', '0', '1', '0'],
-            ['0', '1', '0', '0', '0'],
-            ['0', '0', '1', 'E', '0'],
-            ['1', '0', '0', '0', '1']
+            ['0', '0', '0', '1', '0', '0'],
+            ['0', '1', '0', '0', '0', '1'],
+            ['0', '1', '1', '1', '0', '0'],
+            ['1', '0', '0', '0', '1', '0']
         ]
     }
     return exemplos.get(numero)
 
-def criar_labirinto_personalizado():
-    print("\n=== CRIAR LABIRINTO PERSONALIZADO ===")
+def criar_grid_personalizado():
+    print("\n=== CRIAR GRID PERSONALIZADO ===")
     print("Instruções:")
-    print("- Use 'S' para ponto inicial")
-    print("- Use 'E' para ponto final") 
-    print("- Use '0' para caminhos livres")
-    print("- Use '1' para obstáculos")
+    print("- Use '0' para áreas livres (navegável)") 
+    print("- Use '1' para obstáculos (não navegável)")
     print("- Separe os valores por espaços")
     print("- Todas as linhas devem ter o mesmo número de colunas")
-    print("\nDigite seu labirinto (linha por linha, digite 'fim' para terminar):")
+    print("\nDigite seu grid (linha por linha, digite 'fim' para terminar):")
     
-    labirinto = []
+    grid = []
     while True:
         linha = input().strip()
         if linha.lower() == 'fim':
             break
         if linha:
-            labirinto.append(linha.split())
+            grid.append(linha.split())
     
-    return labirinto
+    return grid
 
-def validar_labirinto(labirinto):
-    if not labirinto or not labirinto[0]:
-        return False, "Labirinto vazio"
+def gerar_grid_aleatorio():
+    """Gera grids aleatórios com diferentes configurações"""
+    while True:
+        opcao = exibir_menu_geracao_automatica()
+        
+        if opcao == '1':
+            return _gerar_grid_com_probabilidade(5, 5, 0.2)  # 20% obstáculos
+        
+        elif opcao == '2':
+            return _gerar_grid_com_probabilidade(8, 8, 0.35)  # 35% obstáculos
+        
+        elif opcao == '3':
+            return _gerar_grid_com_probabilidade(12, 12, 0.5)  # 50% obstáculos
+        
+        elif opcao == '4':
+            return _gerar_grid_personalizado()
+        
+        elif opcao == '5':
+            return None
+        else:
+            print("Opção inválida! Escolha entre 1-5.")
+
+def _gerar_grid_personalizado():
+    """Gera grid com dimensões e probabilidade personalizadas"""
+    try:
+        print("\n=== DIMENSÕES PERSONALIZADAS ===")
+        linhas = int(input("Número de linhas: "))
+        colunas = int(input("Número de colunas: "))
+        
+        if linhas <= 0 or colunas <= 0:
+            print("Dimensões devem ser maiores que zero!")
+            return None
+        
+        # Menu de probabilidade
+        prob_opcao = exibir_menu_probabilidade()
+        probabilidade = 0.35  # padrão
+        
+        if prob_opcao == '1':
+            probabilidade = 0.2
+        elif prob_opcao == '2':
+            probabilidade = 0.35
+        elif prob_opcao == '3':
+            probabilidade = 0.5
+        elif prob_opcao == '4':
+            try:
+                percentual = float(input("Digite a porcentagem de obstáculos (0-100): "))
+                probabilidade = percentual / 100.0
+                if not 0 <= probabilidade <= 1:
+                    print("Porcentagem deve estar entre 0 e 100!")
+                    return None
+            except ValueError:
+                print("Digite um número válido!")
+                return None
+        elif prob_opcao == '5':
+            return None
+        else:
+            print("Opção inválida!")
+            return None
+        
+        grid = _gerar_grid_com_probabilidade(linhas, colunas, probabilidade)
+        print(f"Grid {linhas}x{colunas} gerado com {probabilidade*100:.0f}% de obstáculos")
+        return grid
+        
+    except ValueError:
+        print("Digite números válidos!")
+        return None
+
+def _gerar_grid_com_probabilidade(linhas: int, colunas: int, prob_obstaculo: float) -> list:
+    """Gera um grid aleatório com a probabilidade especificada de obstáculos"""
+    grid = []
     
-    num_colunas = len(labirinto[0])
+    for i in range(linhas):
+        linha = []
+        for j in range(colunas):
+            # Gera número aleatório entre 0 e 1
+            if random.random() < prob_obstaculo:
+                linha.append('1')  # Obstáculo
+            else:
+                linha.append('0')  # Área livre
+        grid.append(linha)
+    
+    # Garantir que há pelo menos algumas células livres
+    celulas_livres = sum(1 for linha in grid for celula in linha if celula == '0')
+    if celulas_livres == 0:
+        # Se não há células livres, criar algumas
+        for _ in range(min(3, linhas * colunas)):
+            x = random.randint(0, linhas - 1)
+            y = random.randint(0, colunas - 1)
+            grid[x][y] = '0'
+    
+    return grid
+
+def validar_grid(grid):
+    """Valida se o grid é válido para Flood Fill"""
+    if not grid or not grid[0]:
+        return False, "Grid vazio"
+    
+    num_colunas = len(grid[0])
     
     # Verificar se todas as linhas têm o mesmo número de colunas
-    for i, linha in enumerate(labirinto):
+    for i, linha in enumerate(grid):
         if len(linha) != num_colunas:
             return False, f"Linha {i} tem número diferente de colunas"
     
-    # Verificar se existe caracteres válidos
-    caracteres_validos = {'S', 'E', '0', '1'}
-    count_S = 0
-    count_E = 0
+    # Verificar se existem apenas caracteres válidos
+    caracteres_validos = {'0', '1'}
     
-    for i, linha in enumerate(labirinto):
+    for i, linha in enumerate(grid):
         for j, celula in enumerate(linha):
             if celula not in caracteres_validos:
-                return False, f"Caractere inválido '{celula}' na posição ({i},{j})"
-            if celula == 'S':
-                count_S += 1
-            if celula == 'E':
-                count_E += 1
+                return False, f"Caractere inválido '{celula}' na posição ({i},{j}). Use apenas '0' e '1'"
     
-    # Verificar se tem exatamente um S e um E
-    if count_S == 0:
-        return False, "Ponto inicial 'S' não encontrado"
-    if count_S > 1:
-        return False, "Múltiplos pontos iniciais 'S' encontrados"
-    if count_E == 0:
-        return False, "Ponto final 'E' não encontrado"
-    if count_E > 1:
-        return False, "Múltiplos pontos finais 'E' encontrados"
-    
-    return True, "Labirinto válido"
+    return True, "Grid válido"
+
+def obter_coordenadas_iniciais(grid):
+    """Obtém coordenadas iniciais para o Flood Fill do usuário"""
+    print("\n Digite as coordenadas iniciais para Flood Fill:")
+    try:
+        x = int(input("Coordenada X (linha, 0-indexed): "))
+        y = int(input("Coordenada Y (coluna, 0-indexed): "))
+        
+        # Validar coordenadas
+        if not (0 <= x < len(grid) and 0 <= y < len(grid[0])):
+            print(f" Coordenadas fora dos limites! Grid: {len(grid)}x{len(grid[0])}")
+            return None
+        
+        if grid[x][y] == '1':
+            print(" Coordenada inicial é um obstáculo! Escolha uma posição com valor '0'")
+            return None
+            
+        return (x, y)
+    except ValueError:
+        print(" Por favor, digite números válidos!")
+        return None
 
 def executar_sistema_menu():
+    """Sistema principal de menu para seleção de grid"""
     while True:
-        opcao = exibir_menu()
+        opcao = exibir_menu_principal()
         
-        if opcao == '1':
-            labirinto = carregar_labirinto_exemplo(1)
-            print("\nLabirinto Exemplo 1 carregado!")
-            return labirinto
-            
-        elif opcao == '2':
-            labirinto = carregar_labirinto_exemplo(2)
-            print("\nLabirinto Exemplo 2 carregado!")
-            return labirinto
-            
-        elif opcao == '3':
-            labirinto = carregar_labirinto_exemplo(3)
-            print("\nLabirinto Exemplo 3 carregado!")
-            return labirinto
+        if opcao in ['1', '2', '3']:
+            grid = carregar_grid_exemplo(int(opcao))
+            print(f"\nGrid Exemplo {opcao} carregado!")
+            return grid
             
         elif opcao == '4':
-            labirinto = criar_labirinto_personalizado()
-            valido, mensagem = validar_labirinto(labirinto)
+            grid = criar_grid_personalizado()
+            valido, mensagem = validar_grid(grid)
             
             if valido:
-                print("\n✓ Labirinto válido! Carregado com sucesso.")
-                return labirinto
+                print("\n✓ Grid válido! Carregado com sucesso.")
+                return grid
             else:
                 print(f"\n✗ Erro: {mensagem}")
                 print("Por favor, tente novamente.")
                 
         elif opcao == '5':
+            grid = gerar_grid_aleatorio()
+            if grid:
+                print(f"\n Grid aleatório {len(grid)}x{len(grid[0])} gerado com sucesso!")
+                return grid
+            # Se grid é None, usuário voltou, então continua no loop
+            
+        elif opcao == '6':
             print("Saindo do programa...")
             return None
         else:
-            print("Opção inválida! Escolha entre 1-5.")
+            print(" Opção inválida! Escolha entre 1-6.")
 
 # Teste independente da Parte 1
 if __name__ == "__main__":
     print("=== TESTE DA PARTE 1 - SISTEMA DE MENU ===")
-    labirinto_selecionado = executar_sistema_menu()
+    grid_selecionado = executar_sistema_menu()
     
-    if labirinto_selecionado:
-        print("\nLabirinto selecionado:")
-        for linha in labirinto_selecionado:
+    if grid_selecionado:
+        print(f"\nGrid selecionado ({len(grid_selecionado)}x{len(grid_selecionado[0])}):")
+        for linha in grid_selecionado:
             print(' '.join(linha))
+        
+        # Estatísticas do grid
+        celulas_livres = sum(1 for linha in grid_selecionado for celula in linha if celula == '0')
+        total_celulas = len(grid_selecionado) * len(grid_selecionado[0])
+        percentual_livre = (celulas_livres / total_celulas) * 100
+        print(f"\n Estatísticas: {celulas_livres}/{total_celulas} células livres ({percentual_livre:.1f}%)")
     else:
-        print("Nenhum labirinto selecionado.")
+        print("Nenhum grid selecionado.")
