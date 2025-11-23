@@ -212,23 +212,15 @@ def obter_coordenadas_iniciais(grid):
         print(" Por favor, digite números válidos!")
         return None
 
-def executar_sistema_menu(callback_processar_grid=None):
-    """Sistema principal de menu para seleção de grid
-    
-    Args:
-        callback_processar_grid: Função opcional que será chamada com o grid selecionado.
-                                 Se None, retorna o grid. Se fornecida, processa o grid e continua o loop.
-    """
+def executar_sistema_menu():
+    """Sistema principal de menu para seleção de grid"""
     while True:
         opcao = exibir_menu_principal()
         
         if opcao in ['1', '2', '3']:
             grid = carregar_grid_exemplo(int(opcao))
             print(f"\nGrid Exemplo {opcao} carregado!")
-            if callback_processar_grid:
-                callback_processar_grid(grid)
-            else:
-                return grid
+            return grid
             
         elif opcao == '4':
             grid = criar_grid_personalizado()
@@ -236,51 +228,38 @@ def executar_sistema_menu(callback_processar_grid=None):
             
             if valido:
                 print("\n✓ Grid válido! Carregado com sucesso.")
-                if callback_processar_grid:
-                    callback_processar_grid(grid)
-                else:
-                    return grid
+                return grid
             else:
                 print(f"\n✗ Erro: {mensagem}")
                 print("Por favor, tente novamente.")
-                # Continua no loop para tentar novamente
                 
         elif opcao == '5':
             grid = gerar_grid_aleatorio()
             if grid:
                 print(f"\n Grid aleatório {len(grid)}x{len(grid[0])} gerado com sucesso!")
-                if callback_processar_grid:
-                    callback_processar_grid(grid)
-                else:
-                    return grid
+                return grid
             # Se grid é None, usuário voltou, então continua no loop
             
         elif opcao == '6':
-            print("\nSaindo do programa...")
-            if callback_processar_grid:
-                break  # Sai do loop
-            else:
-                return None
+            print("Saindo do programa...")
+            return None
         else:
-            print("\nOpção inválida! Escolha entre 1-6.")
+            print(" Opção inválida! Escolha entre 1-6.")
 
 # Teste independente da Parte 1
 if __name__ == "__main__":
     print("=== TESTE DA PARTE 1 - SISTEMA DE MENU ===")
+    grid_selecionado = executar_sistema_menu()
     
-    def processar_grid(grid):
-        """Função para processar o grid selecionado"""
-        print(f"\nGrid selecionado ({len(grid)}x{len(grid[0])}):")
-        for linha in grid:
+    if grid_selecionado:
+        print(f"\nGrid selecionado ({len(grid_selecionado)}x{len(grid_selecionado[0])}):")
+        for linha in grid_selecionado:
             print(' '.join(linha))
         
         # Estatísticas do grid
-        celulas_livres = sum(1 for linha in grid for celula in linha if celula == '0')
-        total_celulas = len(grid) * len(grid[0])
+        celulas_livres = sum(1 for linha in grid_selecionado for celula in linha if celula == '0')
+        total_celulas = len(grid_selecionado) * len(grid_selecionado[0])
         percentual_livre = (celulas_livres / total_celulas) * 100
         print(f"\n Estatísticas: {celulas_livres}/{total_celulas} células livres ({percentual_livre:.1f}%)")
-        print("\n" + "="*50)
-    
-    # Executa o menu em loop até que o usuário escolha sair
-    executar_sistema_menu(callback_processar_grid=processar_grid)
-    print("Programa encerrado.")
+    else:
+        print("Nenhum grid selecionado.")
